@@ -100,16 +100,46 @@ const AuthForm = ({ type }: { type: FormType }) => {
           toast.error(errorMessage);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Authentication error:', error);
-      if (error instanceof Error) {
-        console.error('Error details:', {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-        });
+      
+      let errorMessage = "Failed to sign in. Please try again.";
+      
+      // Handle Firebase-specific errors by checking the error code
+      if (error?.code) {
+        switch (error.code) {
+          case 'auth/invalid-credential':
+            errorMessage = "Invalid email or password. Please check your credentials and try again.";
+            break;
+          case 'auth/user-not-found':
+            errorMessage = "No account found with this email. Please sign up first.";
+            break;
+          case 'auth/wrong-password':
+            errorMessage = "Incorrect password. Please try again.";
+            break;
+          case 'auth/invalid-email':
+            errorMessage = "Invalid email address format.";
+            break;
+          case 'auth/too-many-requests':
+            errorMessage = "Too many failed attempts. Please try again later.";
+            break;
+          case 'auth/user-disabled':
+            errorMessage = "This account has been disabled. Please contact support.";
+            break;
+          case 'auth/email-already-in-use':
+            errorMessage = "An account with this email already exists. Please sign in instead.";
+            break;
+          case 'auth/weak-password':
+            errorMessage = "Password is too weak. Please choose a stronger password.";
+            break;
+          default:
+            errorMessage = `Authentication error: ${error.message || 'Unknown error occurred'}`;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
       }
-      toast.error(`There was an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      toast.error(errorMessage);
     }
   };
 
