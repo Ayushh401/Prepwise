@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
   try {
     const { text: questions } = await generateText({
-      model: google("gemini-2.0-flash-001"),
+      model: google("gemini-2.0-flash"),
       prompt: `Prepare questions for a job interview.
         The job role is ${role}.
         The job experience level is ${level}.
@@ -36,6 +36,11 @@ export async function POST(request: Request) {
       coverImage: getRandomInterviewCover(),
       createdAt: new Date().toISOString(),
     };
+
+    if (!db) {
+      console.error('Database connection not initialized');
+      return Response.json({ success: false, error: "Database error" }, { status: 500 });
+    }
 
     await db.collection("interviews").add(interview);
 
