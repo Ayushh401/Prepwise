@@ -79,10 +79,11 @@ export async function signUp(params: SignUpParams) {
       message: "Account created successfully. Please sign in.",
     };
   } catch (error: any) {
-    console.error("Error creating user:", error);
+    console.error("Error creating user in Firestore:", error);
 
     // Handle Firebase specific errors
     if (error.code === "auth/email-already-exists") {
+
       return {
         success: false,
         message: "This email is already in use",
@@ -228,3 +229,30 @@ export async function isAuthenticated() {
   const user = await getCurrentUser();
   return !!user;
 }
+
+// Update user profile
+export async function updateUserProfile(params: {
+  userId: string;
+  name?: string;
+  resume?: string;
+  bio?: string;
+}) {
+  const { userId, name, resume, bio } = params;
+
+  try {
+    if (!db) throw new Error("Database connection not initialized");
+
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (resume) updateData.resume = resume;
+    if (bio) updateData.bio = bio;
+
+    await db.collection("users").doc(userId).update(updateData);
+
+    return { success: true, message: "Profile updated successfully" };
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    return { success: false, message: "Failed to update profile" };
+  }
+}
+

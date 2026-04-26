@@ -18,9 +18,10 @@ export async function createFeedback(params: CreateFeedbackParams) {
       .join("");
 
     const { object } = await generateObject({
-      model: google("gemini-2.0-flash-001", {
+      model: google("gemini-1.5-flash", {
         structuredOutputs: false,
       }),
+
       schema: feedbackSchema,
       prompt: `
         You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
@@ -120,19 +121,24 @@ export async function getLatestInterviews(
     return [];
   }
 
-  let query = db.collection("interviews").orderBy("createdAt", "desc").limit(limit);
-
-  if (userId) {
-    query = query.where("userId", "!=", userId);
-  }
+  let query = db.collection("interviews").orderBy("createdAt", "desc").limit(limit + 50);
 
   const interviews = await query.get();
 
-  return interviews.docs.map((doc) => ({
+  let formattedInterviews = interviews.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
   })) as Interview[];
+
+  if (userId) {
+    formattedInterviews = formattedInterviews.filter(
+      (interview) => interview.userId !== userId
+    );
+  }
+
+  return formattedInterviews.slice(0, limit);
 }
+
 
 export async function getInterviewsByUserId(
   userId: string | undefined
@@ -140,14 +146,22 @@ export async function getInterviewsByUserId(
   if (!userId) {
     return [];
   }
+  if (!db) {
+    console.error('Database connection not initialized');
+    return [];
+  }
+
   const interviews = await db
     .collection("interviews")
     .where("userId", "==", userId)
-    .orderBy("createdAt", "desc")
     .get();
 
-  return interviews.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Interview[];
+  return (interviews.docs
+    .map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Interview[])
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
+
+

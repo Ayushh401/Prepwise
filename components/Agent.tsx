@@ -26,6 +26,8 @@ const Agent = ({
   userId,
   interviewId,
   feedbackId,
+  resumeContent,
+  role,
   type,
   questions,
 }: AgentProps) => {
@@ -122,6 +124,8 @@ const Agent = ({
         variableValues: {
           username: userName,
           userid: userId,
+          role: role || "General",
+          resume: resumeContent || "No resume provided",
         },
       });
     } else {
@@ -135,10 +139,14 @@ const Agent = ({
       await vapi.start(interviewer, {
         variableValues: {
           questions: formattedQuestions,
+          role: role || "General",
+          resume: resumeContent || "No resume provided",
         },
       });
     }
   };
+
+
 
   const handleDisconnect = () => {
     setCallStatus(CallStatus.FINISHED);

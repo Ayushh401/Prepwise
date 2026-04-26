@@ -9,11 +9,24 @@ function initFirebaseAdmin() {
     if (!process.env.FIREBASE_PRIVATE_KEY) throw new Error('Missing FIREBASE_PRIVATE_KEY');
 
     // Clean up the private key
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY
-      .replace(/\\n/g, '\n')  // Replace escaped newlines
-      .replace(/^['"]|['"]$/g, ''); // Remove surrounding quotes if any
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    
+    // 1. Remove surrounding quotes if they exist
+    privateKey = privateKey.replace(/^['"]|['"]$/g, '');
+    
+    // 2. Handle escaped newlines (different loaders handle this differently)
+    if (privateKey.includes('\\n')) {
+      privateKey = privateKey.replace(/\\n/g, '\n');
+    }
 
     if (!getApps().length) {
+      console.log('--- Firebase Admin Debug ---');
+      console.log('Project ID:', process.env.FIREBASE_PROJECT_ID);
+      console.log('Client Email:', process.env.FIREBASE_CLIENT_EMAIL);
+      console.log('Private Key length:', privateKey.length);
+      console.log('Private Key starts with:', privateKey.substring(0, 30));
+      console.log('---------------------------');
+
       initializeApp({
         credential: cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
@@ -23,6 +36,9 @@ function initFirebaseAdmin() {
       });
       console.log('Firebase Admin initialized successfully');
     }
+
+
+
 
     return {
       db: getFirestore(),
