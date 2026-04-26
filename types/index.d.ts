@@ -83,7 +83,7 @@ interface GetLatestInterviewsParams {
 }
 
 interface SignInParams {
-  email: string;
+  email?: string;
   idToken: string;
 }
 

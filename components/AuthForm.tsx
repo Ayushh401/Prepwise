@@ -83,7 +83,6 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
         console.log('Calling signIn action with token...');
         const result = await signIn({
-          email,
           idToken,
         });
 

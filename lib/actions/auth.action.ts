@@ -98,9 +98,9 @@ export async function signUp(params: SignUpParams) {
 }
 
 export async function signIn(params: SignInParams) {
-  const { email, idToken } = params;
+  const { idToken } = params;
   
-  console.log('🔑 Starting sign in process for email:', email);
+  console.log('🔑 Starting server-side session creation...');
 
   try {
     if (!auth) {
@@ -108,25 +108,8 @@ export async function signIn(params: SignInParams) {
       throw new Error('Authentication service is not available');
     }
 
-    console.log('🔍 Attempting to get user by email...');
-    const userRecord = await auth.getUserByEmail(email).catch(error => {
-      console.error('❌ Error getting user by email:', error);
-      throw error;
-    });
-    
-    if (!userRecord) {
-      console.log('❌ No user found with email:', email);
-      return {
-        success: false,
-        message: "User does not exist. Create an account.",
-      };
-    }
-
-    console.log('✅ User found, setting session cookie...');
-    await setSessionCookie(idToken).catch(error => {
-      console.error('❌ Error setting session cookie:', error);
-      throw error;
-    });
+    console.log('✅ Setting session cookie...');
+    await setSessionCookie(idToken);
     
     console.log('✅ Session cookie set successfully');
     
@@ -142,38 +125,9 @@ export async function signIn(params: SignInParams) {
       stack: error.stack
     });
     
-    let errorMessage = "Failed to log into account. Please try again.";
-    
-    // Handle specific Firebase Auth errors
-    if (error.code) {
-      console.log('ℹ️ Error code:', error.code);
-      
-      switch (error.code) {
-        case 'auth/user-not-found':
-          errorMessage = "No user found with this email. Please sign up first.";
-          break;
-        case 'auth/wrong-password':
-          errorMessage = "Incorrect password. Please try again.";
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = "Too many failed attempts. Please try again later.";
-          break;
-        case 'auth/invalid-email':
-          errorMessage = "Invalid email address format.";
-          break;
-        case 'auth/invalid-credential':
-          errorMessage = "Invalid credentials. Please check your email and password.";
-          break;
-        default:
-          errorMessage = `Authentication error: ${error.message || 'Unknown error occurred'}`;
-      }
-    }
-    
-    console.error('❌ Final error to user:', errorMessage);
-    
     return {
       success: false,
-      message: errorMessage,
+      message: "Failed to log into account. Please try again.",
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     };
   }
