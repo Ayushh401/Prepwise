@@ -36,7 +36,14 @@ interface User {
   name: string;
   email: string;
   id: string;
+  resume?: string;
+  resumeFileName?: string;
+  resumeContent?: string;
+  bio?: string;
 }
+
+
+
 
 interface InterviewCardProps {
   interviewId?: string;
@@ -52,9 +59,13 @@ interface AgentProps {
   userId?: string;
   interviewId?: string;
   feedbackId?: string;
+  resumeContent?: string;
+  role?: string;
   type: "generate" | "interview";
   questions?: string[];
 }
+
+
 
 interface RouteParams {
   params: Promise<Record<string, string>>;
