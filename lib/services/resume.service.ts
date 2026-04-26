@@ -16,7 +16,8 @@ export async function uploadAndParseResume(userId: string, formData: FormData) {
     // Parse PDF using Gemini (Multi-modal)
     // This is much more robust than Node-based PDF libraries which often have canvas dependencies
     const { text: extractedText } = await generateText({
-      model: google("gemini-1.5-flash"),
+      model: google("gemini-2.0-flash"),
+
 
       messages: [
 
