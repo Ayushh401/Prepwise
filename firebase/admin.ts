@@ -1,6 +1,7 @@
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getAuth as getAdminAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { initializeApp, cert, getApps, App } from 'firebase-admin/app';
+import { getAuth as getAdminAuth, Auth } from 'firebase-admin/auth';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import process from 'process';
 
 function initFirebaseAdmin() {
   try {
@@ -8,16 +9,9 @@ function initFirebaseAdmin() {
     if (!process.env.FIREBASE_CLIENT_EMAIL) throw new Error('Missing FIREBASE_CLIENT_EMAIL');
     if (!process.env.FIREBASE_PRIVATE_KEY) throw new Error('Missing FIREBASE_PRIVATE_KEY');
 
-    // Clean up the private key
-    let privateKey = process.env.FIREBASE_PRIVATE_KEY;
-    
-    // 1. Remove surrounding quotes if they exist
-    privateKey = privateKey.replace(/^['"]|['"]$/g, '');
-    
-    // 2. Handle escaped newlines (different loaders handle this differently)
-    if (privateKey.includes('\\n')) {
-      privateKey = privateKey.replace(/\\n/g, '\n');
-    }
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY!;
+    // Handle escaped newlines and quotes (standard fix for Vercel/environment variables)
+    privateKey = privateKey.replace(/^['"]|['"]$/g, '').replace(/\\n/g, '\n');
 
     if (!getApps().length) {
       console.log('--- Firebase Admin Debug ---');
@@ -50,11 +44,8 @@ function initFirebaseAdmin() {
   }
 }
 
-import { Firestore } from 'firebase-admin/firestore';
-import { auth as adminAuth } from 'firebase-admin';
-
 let db: Firestore | null = null;
-let auth: adminAuth.Auth | null = null;
+let auth: Auth | null = null;
 
 try {
   const admin = initFirebaseAdmin();
@@ -62,7 +53,6 @@ try {
   auth = admin.auth;
 } catch (error) {
   console.error('Failed to initialize Firebase Admin. Please check your environment variables.');
-  // Null values will be exported to prevent runtime errors
 }
 
 export { db, auth };
