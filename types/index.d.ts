@@ -39,7 +39,19 @@ interface User {
   resume?: string;
   resumeFileName?: string;
   resumeContent?: string;
+  resumeParsed?: ResumeParsed;
   bio?: string;
+}
+
+interface ResumeParsed {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  summary?: string;
+  education?: string[];
+  skills?: string[];
+  experience?: string[];
 }
 
 

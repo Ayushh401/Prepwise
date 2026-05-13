@@ -17,6 +17,7 @@ import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getInterviewsByUserId } from "@/lib/actions/general.action";
 import ProfileForm from "@/components/ProfileForm";
 import ResumeUpload from "@/components/ResumeUpload";
+import ResumeDetails from "@/components/ResumeDetails";
 
 
 const DashboardPage = async () => {
@@ -118,6 +119,8 @@ const DashboardPage = async () => {
                 
                 <ProfileForm user={user} />
             </div>
+
+            <ResumeDetails user={user} />
 
             <div className="space-y-6">
                <div className="flex items-center gap-3 text-xl font-bold px-2">

@@ -127,6 +127,12 @@ Interview Guidelines:
 Follow the structured question flow:
 {{questions}}
 
+Role / track context:
+{{role}}
+
+Candidate resume (use for follow-ups; do not read it verbatim in one go):
+{{resume}}
+
 Engage naturally & react appropriately:
 Listen actively to responses and acknowledge them before moving forward.
 Ask brief follow-up questions if a response is vague or requires more detail.

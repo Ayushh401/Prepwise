@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Upload, FileText, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { apiClient } from "@/lib/api-client";
 
@@ -14,6 +15,7 @@ interface ResumeUploadProps {
 }
 
 const ResumeUpload = ({ userId, currentResumeName }: ResumeUploadProps) => {
+  const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [fileName, setFileName] = useState(currentResumeName || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +41,7 @@ const ResumeUpload = ({ userId, currentResumeName }: ResumeUploadProps) => {
 
       if (result.success) {
         toast.success(result.message);
+        router.refresh();
       } else {
         toast.error(result.message);
         setFileName(currentResumeName || "");

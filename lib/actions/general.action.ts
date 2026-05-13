@@ -1,7 +1,7 @@
 "use server";
 
-import { generateObject } from "ai";
-import { google } from "@ai-sdk/google";
+import { generateText } from "ai";
+import { groq } from "@ai-sdk/groq";
 
 import { db } from "@/firebase/admin";
 import { feedbackSchema } from "@/constants";
@@ -17,12 +17,8 @@ export async function createFeedback(params: CreateFeedbackParams) {
       )
       .join("");
 
-    const { object } = await generateObject({
-      model: google("gemini-2.0-flash", {
-        structuredOutputs: false,
-      }),
-
-      schema: feedbackSchema,
+    const { text } = await generateText({
+      model: groq("llama-3.1-8b-instant"),
       prompt: `
         You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
         Transcript:
@@ -34,10 +30,27 @@ export async function createFeedback(params: CreateFeedbackParams) {
         - **Problem-Solving**: Ability to analyze problems and propose solutions.
         - **Cultural & Role Fit**: Alignment with company values and job role.
         - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
+
+        Return ONLY valid JSON with this exact schema:
+        {
+          "totalScore": number,
+          "categoryScores": [
+            {"name":"Communication Skills","score":number,"comment":"string"},
+            {"name":"Technical Knowledge","score":number,"comment":"string"},
+            {"name":"Problem Solving","score":number,"comment":"string"},
+            {"name":"Cultural Fit","score":number,"comment":"string"},
+            {"name":"Confidence and Clarity","score":number,"comment":"string"}
+          ],
+          "strengths": ["string"],
+          "areasForImprovement": ["string"],
+          "finalAssessment": "string"
+        }
         `,
       system:
         "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
     });
+    const jsonText = text.replace(/^```json\s*/i, "").replace(/\s*```$/, "").trim();
+    const object = feedbackSchema.parse(JSON.parse(jsonText));
 
     const feedback = {
       interviewId: interviewId,

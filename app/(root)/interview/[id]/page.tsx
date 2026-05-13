@@ -53,6 +53,7 @@ const InterviewDetails = async ({ params }: RouteParams) => {
         userName={user?.name!}
         userId={user?.id}
         interviewId={id}
+        resumeContent={user.resumeContent}
         type="interview"
         questions={interview.questions}
         feedbackId={feedback?.id}

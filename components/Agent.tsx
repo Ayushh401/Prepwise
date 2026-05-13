@@ -4,10 +4,21 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 import { interviewer } from "@/constants";
 import { createFeedback } from "@/lib/actions/general.action";
+
+function getVapiErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object") {
+    const obj = error as Record<string, unknown>;
+    if (typeof obj.message === "string") return obj.message;
+    if ("error" in obj) return String(obj.error);
+  }
+  return typeof error === "string" ? error : "Something went wrong starting the call.";
+}
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -63,8 +74,38 @@ const Agent = ({
       setIsSpeaking(false);
     };
 
-    const onError = (error: Error) => {
-      console.log("Error:", error);
+    const onError = (error: unknown) => {
+      console.error("Vapi error:", error);
+      const msg = getVapiErrorMessage(error);
+      if (/transient assistant|doesn't allow transient/i.test(msg)) {
+        toast.error(
+          'Vapi blocks inline assistants for this key. Create an Assistant in the Vapi dashboard, set NEXT_PUBLIC_VAPI_ASSISTANT_ID to its ID, and use the same variables as in constants (questions, role, resume).'
+        );
+      } else if (/403|forbidden/i.test(msg)) {
+        toast.error(
+          "Vapi rejected this call (403). If the message says transient assistant, add NEXT_PUBLIC_VAPI_ASSISTANT_ID. Otherwise confirm you use the Public API key and restart the dev server."
+        );
+      } else {
+        toast.error(msg);
+      }
+      setCallStatus(CallStatus.INACTIVE);
+    };
+
+    const onCallStartFailed = (event: { error?: string; context?: Record<string, unknown> }) => {
+      const msg = event.error || "Call failed to start.";
+      console.error("Vapi call-start-failed:", event);
+      if (/transient assistant|doesn't allow transient/i.test(msg)) {
+        toast.error(
+          "Set NEXT_PUBLIC_VAPI_ASSISTANT_ID to a dashboard Assistant ID — your key does not allow transient (inline) assistants."
+        );
+      } else if (/403|forbidden/i.test(msg)) {
+        toast.error(
+          "Vapi 403: Use Public key, or add NEXT_PUBLIC_VAPI_ASSISTANT_ID if error mentions transient assistant."
+        );
+      } else {
+        toast.error(msg);
+      }
+      setCallStatus(CallStatus.INACTIVE);
     };
 
     vapi.on("call-start", onCallStart);
@@ -73,6 +114,7 @@ const Agent = ({
     vapi.on("speech-start", onSpeechStart);
     vapi.on("speech-end", onSpeechEnd);
     vapi.on("error", onError);
+    vapi.on("call-start-failed", onCallStartFailed);
 
     return () => {
       vapi.off("call-start", onCallStart);
@@ -81,6 +123,7 @@ const Agent = ({
       vapi.off("speech-start", onSpeechStart);
       vapi.off("speech-end", onSpeechEnd);
       vapi.off("error", onError);
+      vapi.off("call-start-failed", onCallStartFailed);
     };
   }, []);
 
@@ -117,32 +160,79 @@ const Agent = ({
   }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
 
   const handleCall = async () => {
+    const publicKey = process.env.NEXT_PUBLIC_VAPI_WEB_TOKEN?.trim();
+    if (!publicKey) {
+      toast.error("Missing NEXT_PUBLIC_VAPI_WEB_TOKEN. Add your Vapi Public key from the dashboard.");
+      return;
+    }
+
     setCallStatus(CallStatus.CONNECTING);
 
-    if (type === "generate") {
-      await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-        variableValues: {
-          username: userName,
-          userid: userId,
-          role: role || "General",
-          resume: resumeContent || "No resume provided",
-        },
-      });
-    } else {
-      let formattedQuestions = "";
-      if (questions) {
-        formattedQuestions = questions
-          .map((question) => `- ${question}`)
-          .join("\n");
-      }
+    const workflowId = process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID?.trim();
+    const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID?.trim();
 
-      await vapi.start(interviewer, {
-        variableValues: {
+    const startVoice = async (variableValues: Record<string, string>) => {
+      if (assistantId) {
+        await vapi.start(assistantId, { variableValues });
+      } else {
+        await vapi.start(interviewer, { variableValues });
+      }
+    };
+
+    try {
+      if (type === "generate") {
+        if (workflowId) {
+          await vapi.start(workflowId, {
+            variableValues: {
+              username: userName,
+              userid: userId,
+              role: role || "General",
+              resume: resumeContent || "No resume provided",
+            },
+          });
+        } else {
+          const trackLabel = role || "General";
+          const starterQuestions = [
+            `Role focus: ${trackLabel}.`,
+            "Start with a short greeting, then ask about background and motivation for this role.",
+            "Ask a mix of behavioral and technical questions appropriate to the role and resume.",
+            "Keep each question clear and concise for voice.",
+          ];
+          await startVoice({
+            questions: starterQuestions.map((q) => `- ${q}`).join("\n"),
+            role: trackLabel,
+            resume: resumeContent || "No resume provided",
+          });
+        }
+      } else {
+        let formattedQuestions = "";
+        if (questions) {
+          formattedQuestions = questions
+            .map((question) => `- ${question}`)
+            .join("\n");
+        }
+
+        await startVoice({
           questions: formattedQuestions,
           role: role || "General",
           resume: resumeContent || "No resume provided",
-        },
-      });
+        });
+      }
+    } catch (err) {
+      console.error("handleCall:", err);
+      const msg = getVapiErrorMessage(err);
+      if (/transient assistant|doesn't allow transient/i.test(msg)) {
+        toast.error(
+          "Create an Assistant at dashboard.vapi.ai → Assistants, paste its ID in NEXT_PUBLIC_VAPI_ASSISTANT_ID, and put {{questions}}, {{role}}, {{resume}} in the system prompt (see constants/interviewer)."
+        );
+      } else if (/403|forbidden/i.test(msg)) {
+        toast.error(
+          "Vapi 403: Use the Public API key, or set NEXT_PUBLIC_VAPI_ASSISTANT_ID if the error mentions transient assistant."
+        );
+      } else {
+        toast.error(msg);
+      }
+      setCallStatus(CallStatus.INACTIVE);
     }
   };
 
