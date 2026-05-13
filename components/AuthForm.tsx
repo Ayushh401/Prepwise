@@ -64,8 +64,21 @@ const AuthForm = ({ type }: { type: FormType }) => {
           return;
         }
 
-        toast.success("Account created successfully. Please sign in.");
-        router.push("/sign-in");
+        const idToken = await userCredential.user.getIdToken();
+        if (!idToken) {
+          toast.success("Account created successfully. Please sign in.");
+          router.push("/sign-in");
+          return;
+        }
+
+        const signInResult = await signIn({ idToken });
+        if (signInResult?.success) {
+          toast.success("Account created and signed in successfully.");
+          window.location.assign("/dashboard");
+        } else {
+          toast.error(signInResult?.message || "Account created, but sign in failed. Please sign in manually.");
+          router.push("/sign-in");
+        }
       } else {
         const { email, password } = data;
 
@@ -81,27 +94,19 @@ const AuthForm = ({ type }: { type: FormType }) => {
           return;
         }
 
-        console.log('Calling signIn action with token...');
         const result = await signIn({
           idToken,
         });
 
-        console.log('Sign in result:', result);
-
         if (result?.success) {
           toast.success("Signed in successfully.");
-          console.log('Redirecting to home page...');
-          // Use window.location.href for more reliable redirect
-          window.location.href = '/';
+          window.location.assign("/dashboard");
         } else {
           const errorMessage = result?.message || "Failed to sign in. Please try again.";
-          console.error('Sign in error:', errorMessage);
           toast.error(errorMessage);
         }
       }
     } catch (error: any) {
-      console.error('Authentication error:', error);
-      
       let errorMessage = "Failed to sign in. Please try again.";
       
       // Handle Firebase-specific errors by checking the error code

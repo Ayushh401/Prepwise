@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import Agent from "@/components/Agent";
+import ResumeDetails from "@/components/ResumeDetails";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 
 const Page = async ({ searchParams }: RouteParams) => {
@@ -22,7 +24,18 @@ const Page = async ({ searchParams }: RouteParams) => {
         type="generate"
       />
 
-
+      <div className="mt-12 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <h4 className="text-lg font-semibold text-light-100">Your resume (sent to the interviewer)</h4>
+          <Link
+            href="/dashboard"
+            className="text-sm text-primary-200 hover:underline w-fit"
+          >
+            Update resume on Dashboard
+          </Link>
+        </div>
+        <ResumeDetails user={user} />
+      </div>
     </>
   );
 };

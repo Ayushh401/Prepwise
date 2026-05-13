@@ -6,6 +6,29 @@ import { cookies } from "next/headers";
 // Session duration (1 week)
 const SESSION_DURATION = 60 * 60 * 24 * 7;
 
+async function ensureUserRecord(uid: string, fallbackEmail?: string, fallbackName?: string) {
+  if (!db || !auth) return;
+
+  const userRef = db.collection("users").doc(uid);
+  const userRecord = await userRef.get();
+  if (userRecord.exists) return;
+
+  let adminUserName = fallbackName;
+  let adminUserEmail = fallbackEmail;
+  try {
+    const adminUser = await auth.getUser(uid);
+    adminUserName = adminUser.displayName || adminUserName;
+    adminUserEmail = adminUser.email || adminUserEmail;
+  } catch (error) {
+    console.warn("Could not fetch Firebase admin user profile, using token claims fallback.", error);
+  }
+
+  await userRef.set({
+    name: adminUserName || "User",
+    email: adminUserEmail || "",
+  });
+}
+
 // Set session cookie
 export async function setSessionCookie(idToken: string) {
   try {
@@ -110,6 +133,8 @@ export async function signIn(params: SignInParams) {
 
     console.log('✅ Setting session cookie...');
     await setSessionCookie(idToken);
+    const decodedToken = await auth.verifyIdToken(idToken);
+    await ensureUserRecord(decodedToken.uid, decodedToken.email, decodedToken.name);
     
     console.log('✅ Session cookie set successfully');
     
