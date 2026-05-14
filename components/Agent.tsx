@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 import { interviewer } from "@/constants";
-import { createFeedback } from "@/lib/actions/general.action";
+import { createFeedback, createInterview } from "@/lib/actions/general.action";
 
 function getVapiErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
@@ -41,12 +41,14 @@ const Agent = ({
   role,
   type,
   questions,
+  duration = 30,
 }: AgentProps) => {
   const router = useRouter();
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [lastMessage, setLastMessage] = useState<string>("");
+  const [generatedInterviewId, setGeneratedInterviewId] = useState<string>("");
 
   useEffect(() => {
     const onCallStart = () => {
@@ -132,18 +134,18 @@ const Agent = ({
       setLastMessage(messages[messages.length - 1].content);
     }
 
-    const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+    const handleGenerateFeedback = async (messages: SavedMessage[], currentInterviewId: string) => {
       console.log("handleGenerateFeedback");
 
       const { success, feedbackId: id } = await createFeedback({
-        interviewId: interviewId!,
+        interviewId: currentInterviewId,
         userId: userId!,
         transcript: messages,
         feedbackId,
       });
 
       if (success && id) {
-        router.push(`/interview/${interviewId}/feedback`);
+        router.push(`/interview/${currentInterviewId}/feedback`);
       } else {
         console.log("Error saving feedback");
         router.push("/");
@@ -151,13 +153,15 @@ const Agent = ({
     };
 
     if (callStatus === CallStatus.FINISHED) {
-      if (type === "generate") {
-        router.push("/");
+      if (type === "generate" && generatedInterviewId) {
+        handleGenerateFeedback(messages, generatedInterviewId);
+      } else if (type === "interview") {
+        handleGenerateFeedback(messages, interviewId!);
       } else {
-        handleGenerateFeedback(messages);
+        router.push("/");
       }
     }
-  }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
+  }, [messages, callStatus, feedbackId, interviewId, router, type, userId, generatedInterviewId]);
 
   const handleCall = async () => {
     const publicKey = process.env.NEXT_PUBLIC_VAPI_WEB_TOKEN?.trim();
@@ -181,27 +185,49 @@ const Agent = ({
 
     try {
       if (type === "generate") {
+        // Create interview first, then start voice call
+        const { success, interviewId: newInterviewId } = await createInterview({
+          userId: userId!,
+          role: role || "General",
+          questions: [],
+          type: "Voice",
+        });
+
+        if (success && newInterviewId) {
+          setGeneratedInterviewId(newInterviewId);
+        }
+
         if (workflowId) {
+          const durationLabel = duration >= 60 ? "1 hour" : `${duration} minutes`;
           await vapi.start(workflowId, {
             variableValues: {
               username: userName,
               userid: userId,
               role: role || "General",
               resume: resumeContent || "No resume provided",
+              duration: durationLabel,
             },
           });
         } else {
           const trackLabel = role || "General";
+          const durationLabel = duration >= 60 ? "1 hour" : `${duration} minutes`;
           const starterQuestions = [
-            `Role focus: ${trackLabel}.`,
-            "Start with a short greeting, then ask about background and motivation for this role.",
-            "Ask a mix of behavioral and technical questions appropriate to the role and resume.",
-            "Keep each question clear and concise for voice.",
+            `Role: ${trackLabel}`,
+            `Duration: ${durationLabel} interview`,
+            "1. Start: \"Tell me about yourself and what brings you to this role\"",
+            "2. Ask about work experience from their resume - pick the most relevant role and ask about a challenging project",
+            "3. Ask about a skill they listed - \"Give me an example of how you've used [skill]\"",
+            "4. Ask about a project - \"Tell me about a project you're proud of. What was the challenge?\"",
+            "5. Ask a STAR-method behavioral question: \"Tell me about a time you faced a difficult problem at work\"",
+            "6. Ask about their strengths/weaknesses relevant to the role",
+            "7. End with \"Do you have any questions for me?\"",
+            "IMPORTANT: Keep the interview to approximately " + durationLabel + ". Wrap up naturally when time is near.",
           ];
           await startVoice({
             questions: starterQuestions.map((q) => `- ${q}`).join("\n"),
             role: trackLabel,
             resume: resumeContent || "No resume provided",
+            duration: durationLabel,
           });
         }
       } else {
@@ -216,6 +242,7 @@ const Agent = ({
           questions: formattedQuestions,
           role: role || "General",
           resume: resumeContent || "No resume provided",
+          duration: duration >= 60 ? "1 hour" : `${duration} minutes`,
         });
       }
     } catch (err) {

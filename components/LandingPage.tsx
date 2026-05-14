@@ -71,7 +71,7 @@ const LandingPage = () => {
         </h1>
         
         <p className="text-xl text-light-100 mb-10 max-w-2xl mx-auto">
-          PrepWise gives you the edge with real-time mock interviews, instant feedback, and personalized coaching to land your dream job at top tech companies.
+          Pracify gives you the edge with real-time mock interviews, instant feedback, and personalized coaching to land your dream job at top tech companies.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-16">
@@ -98,7 +98,7 @@ const LandingPage = () => {
                     <div className="w-10 h-10 rounded-full bg-primary-200 flex items-center justify-center">
                         <Cpu className="text-dark-100 w-6 h-6" />
                     </div>
-                    <div className="text-left font-bold text-lg">PrepWise AI</div>
+                    <div className="text-left font-bold text-lg">Pracify AI</div>
                 </div>
                 <p className="text-left text-sm text-light-100 italic">"Great answer! You explained the time complexity well, but could you elaborate on the space complexity for the recursive approach?"</p>
             </div>
@@ -132,7 +132,7 @@ const LandingPage = () => {
         <div className="flex flex-col items-center text-center mb-20">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Built for Every Career Stage</h2>
           <p className="text-lg text-light-100 max-w-2xl">
-            Whether you're a new grad or a senior leader, PrepWise adapts to your experience level and target role.
+            Whether you're a new grad or a senior leader, Pracify adapts to your experience level and target role.
           </p>
         </div>
 
@@ -155,7 +155,7 @@ const LandingPage = () => {
           <div className="relative">
              <div className="absolute -top-20 -left-20 w-80 h-80 bg-primary-200/10 blur-[100px] rounded-full animate-pulse" />
              <div className="z-10 relative space-y-8">
-                <h2 className="text-4xl md:text-5xl font-bold">Why Top Candidates Choose PrepWise</h2>
+                <h2 className="text-4xl md:text-5xl font-bold">Why Top Candidates Choose Pracify</h2>
                 <ul className="space-y-4">
                     {features.map((feature, i) => (
                         <li key={i} className="flex items-center gap-3 text-light-100">
@@ -228,7 +228,7 @@ const LandingPage = () => {
             <div className="absolute inset-0 bg-primary-200/5 pointer-events-none" />
             <h2 className="text-4xl md:text-5xl font-bold mb-6 relative z-10">Ready to build your career?</h2>
             <p className="text-xl text-light-100 mb-10 max-w-xl mx-auto relative z-10">
-                Join thousands of candidates who used PrepWise to land offers at their dream companies.
+                Join thousands of candidates who used Pracify to land offers at their dream companies.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
                 <Button asChild className="btn-primary h-14 px-10 text-lg">
@@ -245,8 +245,8 @@ const LandingPage = () => {
       <footer className="py-12 border-t border-border mt-20">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-3">
-                <Image src="/logo.svg" alt="PrepWise" width={32} height={32} />
-                <span className="text-2xl font-bold text-primary-100">PrepWise</span>
+                <Image src="/logo.svg" alt="Pracify" width={32} height={32} />
+                <span className="text-2xl font-bold text-primary-100">Pracify</span>
             </div>
             
             <div className="flex gap-8 text-sm text-light-400">
@@ -257,7 +257,7 @@ const LandingPage = () => {
             </div>
             
             <p className="text-sm text-light-400 font-mono">
-                © {new Date().getFullYear()} PrepWise. Made for the next generation of builders.
+                © {new Date().getFullYear()} Pracify. Made for the next generation of builders.
             </p>
         </div>
       </footer>

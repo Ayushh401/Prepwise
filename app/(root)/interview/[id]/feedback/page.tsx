@@ -37,11 +37,11 @@ const Feedback = async ({ params }: RouteParams) => {
           <div className="flex flex-row gap-2 items-center">
             <Image src="/star.svg" width={22} height={22} alt="star" />
             <p>
-              Overall Impression:{" "}
+              Overall Score:{" "}
               <span className="text-primary-200 font-bold">
-                {feedback?.totalScore}
+                {feedback ? Math.round(feedback.totalScore / 10) : 0}
               </span>
-              /100
+              /10
             </p>
           </div>
 
@@ -67,7 +67,7 @@ const Feedback = async ({ params }: RouteParams) => {
         {feedback?.categoryScores?.map((category, index) => (
           <div key={index}>
             <p className="font-bold">
-              {index + 1}. {category.name} ({category.score}/100)
+              {index + 1}. {category.name} ({Math.round(category.score / 10)}/10)
             </p>
             <p>{category.comment}</p>
           </div>

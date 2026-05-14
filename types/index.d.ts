@@ -75,6 +75,7 @@ interface AgentProps {
   role?: string;
   type: "generate" | "interview";
   questions?: string[];
+  duration?: number;
 }
 
 
