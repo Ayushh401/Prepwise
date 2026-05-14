@@ -42,6 +42,7 @@ const Agent = ({
   type,
   questions,
   duration = 30,
+  persona,
 }: AgentProps) => {
   const router = useRouter();
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
@@ -206,14 +207,38 @@ const Agent = ({
               role: role || "General",
               resume: resumeContent || "No resume provided",
               duration: durationLabel,
+              interviewerName: persona?.name || "Interviewer",
+              interviewerStyle: persona?.style || "professional",
             },
           });
         } else {
           const trackLabel = role || "General";
           const durationLabel = duration >= 60 ? "1 hour" : `${duration} minutes`;
+
+          // Persona-based styling
+          const personaName = persona?.name || "Interviewer";
+          const personaStyle = persona?.style || "professional";
+
+          let styleInstructions = "";
+          switch (personaStyle) {
+            case "friendly":
+              styleInstructions = "Be warm, encouraging, and conversational. Use the candidate's name frequently. End responses with supportive comments like 'Great answer!' or 'That's interesting, tell me more.'";
+              break;
+            case "technical":
+              styleInstructions = "Be focused on technical depth. Ask follow-up questions about implementation details, trade-offs, and problem-solving approaches. Probe for specific examples.";
+              break;
+            case "tough":
+              styleInstructions = "Be more challenging and direct. Ask probing questions about failures, weaknesses, and difficult situations. Push for more specific examples.";
+              break;
+            default: // professional
+              styleInstructions = "Be professional, structured, and balanced. Ask clear follow-up questions using the STAR method.";
+          }
+
           const starterQuestions = [
             `Role: ${trackLabel}`,
             `Duration: ${durationLabel} interview`,
+            `Interviewer Persona: ${personaName}, ${persona?.title || 'Interviewer'}`,
+            `Interviewer Style: ${styleInstructions}`,
             "1. Start: \"Tell me about yourself and what brings you to this role\"",
             "2. Ask about work experience from their resume - pick the most relevant role and ask about a challenging project",
             "3. Ask about a skill they listed - \"Give me an example of how you've used [skill]\"",
@@ -228,6 +253,8 @@ const Agent = ({
             role: trackLabel,
             resume: resumeContent || "No resume provided",
             duration: durationLabel,
+            interviewerName: personaName,
+            interviewerStyle: personaStyle,
           });
         }
       } else {
@@ -275,17 +302,23 @@ const Agent = ({
       <div className="call-view">
         {/* AI Interviewer Card */}
         <div className="card-interviewer">
-          <div className="avatar">
-            <Image
-              src="/ai-avatar.png"
-              alt="profile-image"
-              width={65}
-              height={54}
-              className="object-cover"
-            />
+          <div className="avatar flex items-center justify-center bg-gradient-to-br from-primary-200/20 to-primary-200/40">
+            {persona ? (
+              <span className="text-2xl font-bold text-primary-200">
+                {persona.avatar}
+              </span>
+            ) : (
+              <Image
+                src="/ai-avatar.png"
+                alt="profile-image"
+                width={65}
+                height={54}
+                className="object-cover"
+              />
+            )}
             {isSpeaking && <span className="animate-speak" />}
           </div>
-          <h3>AI Interviewer</h3>
+          <h3>{persona ? `${persona.name} - ${persona.title}` : "AI Interviewer"}</h3>
         </div>
 
         {/* User Profile Card */}
@@ -321,7 +354,15 @@ const Agent = ({
 
       <div className="w-full flex justify-center">
         {callStatus !== "ACTIVE" ? (
-          <button className="relative btn-call" onClick={() => handleCall()}>
+          <button
+            className={cn(
+              "relative btn-call",
+              !persona && "opacity-50 cursor-not-allowed"
+            )}
+            onClick={() => persona && handleCall()}
+            disabled={!persona}
+            title={persona ? "Start interview" : "Please select an interviewer first"}
+          >
             <span
               className={cn(
                 "absolute animate-ping rounded-full opacity-75",
@@ -331,7 +372,9 @@ const Agent = ({
 
             <span className="relative">
               {callStatus === "INACTIVE" || callStatus === "FINISHED"
-                ? "Call"
+                ? persona
+                  ? "Start Interview"
+                  : "Select Interviewer"
                 : ". . ."}
             </span>
           </button>
