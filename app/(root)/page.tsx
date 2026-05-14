@@ -28,44 +28,44 @@ const roleTracks = [
   {
     title: "Resume-Based Track",
     description: "Scan your resume and get tailored questions",
-    icon: <FileText className="w-6 h-6 text-primary-200" />,
+    icon: <FileText className="w-6 h-6 text-primary-200-100" />,
     color: "from-blue-600/20 to-transparent",
   },
   {
     title: "Frontend Developer",
     description: "React, Next.js, UI/UX, & Performance",
-    icon: <Code2 className="w-6 h-6 text-primary-200" />,
+    icon: <Code2 className="w-6 h-6 text-primary-200-100" />,
     color: "from-blue-500/20 to-transparent",
   },
 
   {
     title: "Backend Developer",
     description: "Node.js, Databases, APIs & Scalability",
-    icon: <Database className="w-6 h-6 text-primary-200" />,
+    icon: <Database className="w-6 h-6 text-primary-200-100" />,
     color: "from-purple-500/20 to-transparent",
   },
   {
     title: "Fullstack Developer",
     description: "End-to-end development & System Design",
-    icon: <Layers className="w-6 h-6 text-primary-200" />,
+    icon: <Layers className="w-6 h-6 text-primary-200-100" />,
     color: "from-green-500/20 to-transparent",
   },
   {
     title: "Mobile Developer",
     description: "iOS, Android, React Native & Flutter",
-    icon: <Smartphone className="w-6 h-6 text-primary-200" />,
+    icon: <Smartphone className="w-6 h-6 text-primary-200-100" />,
     color: "from-orange-500/20 to-transparent",
   },
   {
     title: "AI / ML Engineer",
     description: "LLMs, Data Models & Neural Networks",
-    icon: <BrainCircuit className="w-6 h-6 text-primary-200" />,
+    icon: <BrainCircuit className="w-6 h-6 text-primary-200-100" />,
     color: "from-pink-500/20 to-transparent",
   },
   {
     title: "DevOps Engineer",
     description: "Cloud, CI/CD, Docker & Kubernetes",
-    icon: <Settings className="w-6 h-6 text-primary-200" />,
+    icon: <Settings className="w-6 h-6 text-primary-200-100" />,
     color: "from-cyan-500/20 to-transparent",
   },
 ];
@@ -88,16 +88,16 @@ async function Home() {
   return (
     <div className="root-layout !my-0 !py-12">
       {/* Welcome Banner */}
-      <section className="relative overflow-hidden blue-gradient-dark rounded-[2.5rem] p-10 md:p-16 mb-16 border border-primary-200/10">
+      <section className="relative overflow-hidden blue-gradient-dark rounded-[2.5rem] p-10 md:p-16 mb-16 border border-primary/10">
         <div className="absolute top-0 right-0 w-1/3 h-full opacity-10 pointer-events-none">
             <div className="absolute inset-0 bg-primary-200 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2" />
         </div>
         
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
           <div className="flex flex-col gap-6 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-200/10 border border-primary-200/20 w-fit">
-               <Target className="w-4 h-4 text-primary-200" />
-               <span className="text-xs font-bold text-primary-100 uppercase tracking-wider">Welcome back, {user.name}</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary-200/20 w-fit">
+               <Target className="w-4 h-4 text-primary-200-100" />
+               <span className="text-xs font-bold text-primary-200-100 uppercase tracking-wider">Welcome back, {user.name}</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight">
               Ready to crush your next interview?
@@ -144,7 +144,7 @@ async function Home() {
                         {track.icon}
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary-100 transition-colors">{track.title}</h3>
+                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary-200-100 transition-colors">{track.title}</h3>
                         <p className="text-sm text-light-400 group-hover:text-light-100 transition-colors">{track.description}</p>
                     </div>
                 </div>
@@ -159,11 +159,11 @@ async function Home() {
         <section className="space-y-8">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <History className="w-6 h-6 text-primary-200" />
+                    <History className="w-6 h-6 text-primary-200-100" />
                     <h2 className="text-2xl font-bold">Your History</h2>
                 </div>
                 {hasPastInterviews && (
-                    <Link href="#" className="text-sm text-primary-200 hover:underline">View all</Link>
+                    <Link href="#" className="text-sm text-primary-200-100 hover:underline">View all</Link>
                 )}
             </div>
 
@@ -195,7 +195,7 @@ async function Home() {
         <section className="space-y-8">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <Plus className="w-6 h-6 text-primary-200" />
+                    <Plus className="w-6 h-6 text-primary-200-100" />
                     <h2 className="text-2xl font-bold">Community Templates</h2>
                 </div>
             </div>
