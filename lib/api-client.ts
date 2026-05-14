@@ -1,6 +1,6 @@
 
 /**
- * API Client for PrepWise
+ * API Client for Pracify
  * Maps the Backend API routes to the Frontend
  */
 

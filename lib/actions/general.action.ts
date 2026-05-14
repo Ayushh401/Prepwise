@@ -177,4 +177,38 @@ export async function getInterviewsByUserId(
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
+export async function createInterview(params: {
+  userId: string;
+  role: string;
+  questions: string[];
+  type: string;
+  techstack?: string[];
+}): Promise<{ success: boolean; interviewId: string }> {
+  const { userId, role, questions, type, techstack = [] } = params;
+
+  if (!db) {
+    console.error('Database connection not initialized');
+    return { success: false, interviewId: "" };
+  }
+
+  try {
+    const interviewRef = db.collection("interviews").doc();
+    await interviewRef.set({
+      userId,
+      role,
+      questions,
+      type,
+      techstack,
+      level: "Mid-Level",
+      finalized: true,
+      createdAt: new Date().toISOString(),
+    });
+
+    return { success: true, interviewId: interviewRef.id };
+  } catch (error) {
+    console.error("Error creating interview:", error);
+    return { success: false, interviewId: "" };
+  }
+}
+
 

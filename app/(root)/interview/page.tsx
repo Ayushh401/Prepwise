@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import Agent from "@/components/Agent";
+import InterviewSetup from "@/components/InterviewSetup";
 import ResumeDetails from "@/components/ResumeDetails";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 
@@ -16,13 +16,7 @@ const Page = async ({ searchParams }: RouteParams) => {
         <h3 className="text-2xl font-bold">{role ? `${role} Interview` : "Custom Interview"}</h3>
       </div>
 
-      <Agent
-        userName={user.name}
-        userId={user.id}
-        resumeContent={user.resumeContent}
-        role={role}
-        type="generate"
-      />
+      <InterviewSetup user={user} role={role} />
 
       <div className="mt-12 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">

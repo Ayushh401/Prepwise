@@ -14,9 +14,9 @@ const Layout = async ({ children }: { children: ReactNode }) => {
       <nav className="flex items-center justify-between w-full max-w-7xl mx-auto py-6 px-16 max-sm:px-4 border-b border-border/50 sticky top-0 bg-background/80 backdrop-blur-md z-50">
         <Link href="/" className="flex items-center gap-2 group">
           <div className="p-1.5 rounded-xl bg-primary-200/10 group-hover:bg-primary-200/20 transition-colors">
-            <Image src="/logo.svg" alt="PrepWise Logo" width={32} height={28} />
+            <Image src="/logo.svg" alt="Pracify Logo" width={32} height={28} />
           </div>
-          <h2 className="text-primary-100 font-bold tracking-tight">PrepWise</h2>
+          <h2 className="text-primary-100 font-bold tracking-tight">Pracify</h2>
         </Link>
 
         <div className="flex items-center gap-4">
