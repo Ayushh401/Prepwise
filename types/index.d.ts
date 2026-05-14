@@ -76,6 +76,14 @@ interface AgentProps {
   type: "generate" | "interview";
   questions?: string[];
   duration?: number;
+  persona?: {
+    id: string;
+    name: string;
+    title: string;
+    style: string;
+    avatar: string;
+    description: string;
+  } | null;
 }
 
 
