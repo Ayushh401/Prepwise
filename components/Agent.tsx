@@ -43,6 +43,8 @@ const Agent = ({
   questions,
   duration = 30,
   persona,
+  language = "English",
+  additionalContext = "",
 }: AgentProps) => {
   const router = useRouter();
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
@@ -180,7 +182,24 @@ const Agent = ({
       if (assistantId) {
         await vapi.start(assistantId, { variableValues });
       } else {
-        await vapi.start(interviewer, { variableValues });
+        const languageCodeMap: Record<string, string> = {
+          English: "en",
+          Spanish: "es",
+          French: "fr",
+          German: "de",
+          Hindi: "hi",
+        };
+        
+        const langCode = languageCodeMap[language] || "en";
+        // Create a copy to prevent mutation issues, though we cast to any or similar if types are strict
+        const overriddenInterviewer = {
+          ...interviewer,
+          transcriber: {
+            ...(interviewer.transcriber as any),
+            language: langCode,
+          }
+        };
+        await vapi.start(overriddenInterviewer as any, { variableValues });
       }
     };
 
@@ -209,6 +228,8 @@ const Agent = ({
               duration: durationLabel,
               interviewerName: persona?.name || "Interviewer",
               interviewerStyle: persona?.style || "professional",
+              language: language,
+              additionalContext: additionalContext || "None provided",
             },
           });
         } else {
@@ -255,6 +276,8 @@ const Agent = ({
             duration: durationLabel,
             interviewerName: personaName,
             interviewerStyle: personaStyle,
+            language: language,
+            additionalContext: additionalContext || "None provided",
           });
         }
       } else {
@@ -270,6 +293,8 @@ const Agent = ({
           role: role || "General",
           resume: resumeContent || "No resume provided",
           duration: duration >= 60 ? "1 hour" : `${duration} minutes`,
+          language: language,
+          additionalContext: additionalContext || "None provided",
         });
       }
     } catch (err) {
