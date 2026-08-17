@@ -39,6 +39,29 @@ const ResumeDetails = ({ user }: { user: User }) => {
         </div>
       </div>
 
+      {(parsed?.linkedin || parsed?.github || parsed?.website) && (
+        <div className="rounded-xl border border-border/60 bg-dark-300/40 p-4">
+          <p className="text-xs text-light-400 mb-2">Links</p>
+          <div className="flex flex-wrap gap-2">
+            {parsed?.linkedin && (
+              <a href={parsed.linkedin} target="_blank" rel="noreferrer" className="text-xs px-2 py-1 rounded-md bg-primary-200/10 text-primary-100 border border-primary-200/20 hover:bg-primary-200/20">
+                LinkedIn
+              </a>
+            )}
+            {parsed?.github && (
+              <a href={parsed.github} target="_blank" rel="noreferrer" className="text-xs px-2 py-1 rounded-md bg-primary-200/10 text-primary-100 border border-primary-200/20 hover:bg-primary-200/20">
+                GitHub
+              </a>
+            )}
+            {parsed?.website && (
+              <a href={parsed.website} target="_blank" rel="noreferrer" className="text-xs px-2 py-1 rounded-md bg-primary-200/10 text-primary-100 border border-primary-200/20 hover:bg-primary-200/20">
+                Website
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
       {parsed?.summary && (
         <div className="rounded-xl border border-border/60 bg-dark-300/40 p-4">
           <p className="text-xs text-light-400 mb-1">Introduction</p>

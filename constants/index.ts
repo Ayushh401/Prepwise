@@ -198,6 +198,20 @@ export const feedbackSchema = z.object({
   finalAssessment: z.string(),
 });
 
+export const resumeSchema = z.object({
+  fullName: z.string().optional(),
+  email: z.string().optional(),
+  phone: z.string().optional(),
+  location: z.string().optional(),
+  summary: z.string().optional(),
+  education: z.array(z.string()).optional(),
+  skills: z.array(z.string()).optional(),
+  experience: z.array(z.string()).optional(),
+  linkedin: z.string().optional(),
+  github: z.string().optional(),
+  website: z.string().optional(),
+});
+
 export const interviewCovers = [
   "/adobe.png",
   "/amazon.png",
