@@ -52,6 +52,9 @@ interface ResumeParsed {
   education?: string[];
   skills?: string[];
   experience?: string[];
+  linkedin?: string;
+  github?: string;
+  website?: string;
 }
 
 

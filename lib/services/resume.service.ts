@@ -1,6 +1,10 @@
 "use server";
 
+import { generateText } from "ai";
+import { groq } from "@ai-sdk/groq";
+
 import { db } from "@/firebase/admin";
+import { resumeSchema } from "@/constants";
 import { revalidatePath } from "next/cache";
 
 function extractResumeDetails(text: string): ResumeParsed {
@@ -83,6 +87,55 @@ function removeUndefinedDeep<T>(value: T): T {
   return value;
 }
 
+async function extractResumeWithLLM(text: string): Promise<ResumeParsed | null> {
+  try {
+    const { text: responseText } = await generateText({
+      model: groq("llama-3.1-8b-instant"),
+      prompt: `
+You are an expert resume parser. Extract structured details from the following resume text.
+
+RESUME TEXT:
+${text.slice(0, 12000)}
+
+Extract and return ONLY valid JSON with exactly this schema (omit fields that are not present):
+{
+  "fullName": string,
+  "email": string,
+  "phone": string,
+  "location": string,
+  "summary": string,
+  "education": ["string"],
+  "skills": ["string"],
+  "experience": ["string"],
+  "linkedin": string,
+  "github": string,
+  "website": string
+}
+
+Rules:
+- Detect section headings regardless of exact wording (e.g. "Technical Skills", "Professional Experience", "Work History", "Education & Certifications", "LinkedIn", "GitHub").
+- Skills: return individual skill names, never comma-separated strings.
+- Experience: return each role/entry as one readable string (company, title, dates, key points).
+- Education: return each entry as one string.
+- LinkedIn/GitHub/website: return full URLs if present.
+- Do not add fields outside this schema. Return valid JSON only, no markdown fences.
+`,
+      system:
+        "You are a precise resume parsing assistant that extracts structured JSON data from resume text.",
+    });
+
+    const jsonText = responseText
+      .replace(/^```json\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
+    const parsed = resumeSchema.parse(JSON.parse(jsonText));
+    return removeUndefinedDeep(parsed) as ResumeParsed;
+  } catch (error) {
+    console.error("LLM resume extraction failed:", error);
+    return null;
+  }
+}
+
 export async function uploadAndParseResume(userId: string, formData: FormData) {
   try {
     const file = formData.get("file") as File;
@@ -98,7 +151,11 @@ export async function uploadAndParseResume(userId: string, formData: FormData) {
     const extractedText = parsedPdf.text?.trim();
 
     if (!extractedText) throw new Error("Could not extract text from resume");
-    const resumeParsed = removeUndefinedDeep(extractResumeDetails(extractedText));
+
+    // Prefer LLM extraction; fall back to regex heuristics if it fails.
+    const resumeParsed =
+      (await extractResumeWithLLM(extractedText)) ||
+      removeUndefinedDeep(extractResumeDetails(extractedText));
 
     if (!db) throw new Error("Database connection not initialized");
 
