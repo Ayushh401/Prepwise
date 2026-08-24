@@ -143,18 +143,8 @@ export async function signIn(params: SignInParams) {
       message: "Successfully signed in.",
     };
   } catch (error: any) {
-    console.error('❌ Sign in error details:', {
-      message: error.message,
-      code: error.code,
-      name: error.name,
-      stack: error.stack
-    });
-    
-    return {
-      success: false,
-      message: "Failed to log into account. Please try again.",
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    };
+    console.error("LOGIN ERROR:", error);
+    return { success: false, message: error.message };
   }
 }
 
