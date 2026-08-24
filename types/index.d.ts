@@ -87,6 +87,8 @@ interface AgentProps {
     avatar: string;
     description: string;
   } | null;
+  language?: string;
+  additionalContext?: string;
 }
 
 
